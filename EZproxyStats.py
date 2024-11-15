@@ -79,9 +79,16 @@ try:
                         state = response.subdivisions.most_specific.name or 'Unknown'
                         city = response.city.name or 'Unknown'
                     except geoip2.errors.AddressNotFoundError:
-                        country = 'Unknown'
-                        state = 'Unknown'
-                        city = 'Unknown'
+                        logging.warning(f"IP address not found in GeoLite2 database: {ip}")
+                        # Handle private/local IPs
+                        if ip.startswith("10.") or ip.startswith("192.168."):
+                            country = "United States"
+                            state = "New York"
+                            city = "Binghamton"
+                        else:
+                            country = "Unknown"
+                            state = "Unknown"
+                            city = "Unknown"
                     except Exception as e:
                         logging.error(f"GeoIP lookup error for IP: {ip}. Error: {e}")
                         country = 'Error'
@@ -118,6 +125,7 @@ except Exception as e:
     logging.critical(f"Unexpected error opening GeoIP database: {e}")
 
 output.close()
+
 # Process stats for charts and HTML report generation
 df = pd.read_csv(statfile)
 
